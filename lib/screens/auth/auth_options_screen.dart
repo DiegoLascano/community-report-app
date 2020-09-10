@@ -101,7 +101,8 @@ class AuthOptionsScreen extends StatelessWidget {
         SignInButton(
           text: 'Ingresa con tu email',
           color: Colors.grey[300],
-          onPressed: () => _signInWithEmailAndPassword(context),
+          onPressed:
+              isLoading ? null : () => _signInWithEmailAndPassword(context),
         ),
         FlatButton(
           onPressed: isLoading ? null : () => _signInAnonymously(context),
