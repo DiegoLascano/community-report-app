@@ -3,20 +3,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class User {
-  User({@required this.uid});
+class AppUser {
+  AppUser({@required this.uid});
 
   final String uid;
 }
 
 /// Authentication class interface
 abstract class AuthInterface {
-  Stream<User> get onAuthStateChanged;
-  Future<User> currentUser();
-  Future<User> signInAnonymously();
-  Future<User> signInWithEmailAndPassword(String email, String password);
-  Future<User> createUserWithEmailAndPassword(String email, String password);
-  Future<User> signInWithGoogle();
+  Stream<AppUser> get onAuthStateChanged;
+  AppUser currentUser();
+  Future<AppUser> signInAnonymously();
+  Future<AppUser> signInWithEmailAndPassword(String email, String password);
+  Future<AppUser> createUserWithEmailAndPassword(String email, String password);
+  Future<AppUser> signInWithGoogle();
   Future<void> signOut();
 }
 
@@ -24,12 +24,12 @@ abstract class AuthInterface {
 class Auth implements AuthInterface {
   final _firebaseAuth = FirebaseAuth.instance;
 
-  User _userFromFirebase(FirebaseUser user) {
-    return user == null ? null : User(uid: user.uid);
+  AppUser _userFromFirebase(User user) {
+    return user == null ? null : AppUser(uid: user.uid);
   }
 
   @override
-  Future<User> createUserWithEmailAndPassword(
+  Future<AppUser> createUserWithEmailAndPassword(
       String email, String password) async {
     final authResult = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
@@ -37,43 +37,42 @@ class Auth implements AuthInterface {
   }
 
   @override
-  Future<User> currentUser() async {
-    final user = await _firebaseAuth.currentUser();
+  AppUser currentUser() {
+    final user = _firebaseAuth.currentUser;
     return _userFromFirebase(user);
   }
 
   @override
-  Stream<User> get onAuthStateChanged {
-    return _firebaseAuth.onAuthStateChanged.map(_userFromFirebase);
+  Stream<AppUser> get onAuthStateChanged {
+    return _firebaseAuth.authStateChanges().map(_userFromFirebase);
   }
 
   @override
-  Future<User> signInAnonymously() async {
+  Future<AppUser> signInAnonymously() async {
     final authResult = await _firebaseAuth.signInAnonymously();
     return _userFromFirebase(authResult.user);
   }
 
   @override
-  Future<User> signInWithEmailAndPassword(String email, String password) async {
+  Future<AppUser> signInWithEmailAndPassword(
+      String email, String password) async {
     final authResult = await _firebaseAuth.signInWithEmailAndPassword(
         email: email, password: password);
     return _userFromFirebase(authResult.user);
   }
 
   @override
-  Future<User> signInWithGoogle() async {
-    final googleSignIn = GoogleSignIn();
-    final googleAccount = await googleSignIn.signIn();
-
-    if (googleAccount != null) {
-      final googleAuth = await googleAccount.authentication;
+  Future<AppUser> signInWithGoogle() async {
+    final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
+    if (googleUser != null) {
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       if (googleAuth.idToken != null && googleAuth.accessToken != null) {
-        final authResult = await _firebaseAuth.signInWithCredential(
-          GoogleAuthProvider.getCredential(
-            idToken: googleAuth.idToken,
-            accessToken: googleAuth.accessToken,
-          ),
+        final GoogleAuthCredential credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+          accessToken: googleAuth.accessToken,
         );
+        final authResult = await _firebaseAuth.signInWithCredential(credential);
         return _userFromFirebase(authResult.user);
       } else {
         throw PlatformException(

@@ -42,7 +42,7 @@ class AuthFormBloc with Validators {
 
   Function(bool) get changeLoading => _loadingController.sink.add;
 
-  Future<User> _authenticate(Future<User> Function() authMethod) async {
+  Future<AppUser> _authenticate(Future<AppUser> Function() authMethod) async {
     try {
       changeLoading(true);
       return await authMethod();
@@ -52,10 +52,10 @@ class AuthFormBloc with Validators {
     }
   }
 
-  Future<User> signInWithEmailAndPassword() async => await _authenticate(
+  Future<AppUser> signInWithEmailAndPassword() async => await _authenticate(
       () => auth.signInWithEmailAndPassword(email, password));
 
-  Future<User> createUserWithEmailAndPassword() async => await _authenticate(
+  Future<AppUser> createUserWithEmailAndPassword() async => await _authenticate(
       () => auth.createUserWithEmailAndPassword(email, password));
 
   void dispose() {

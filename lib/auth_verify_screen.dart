@@ -8,9 +8,9 @@ class AuthVerifyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthInterface>(context, listen: false);
-    return StreamBuilder<User>(
+    return StreamBuilder<AppUser>(
       stream: auth.onAuthStateChanged,
-      builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<AppUser> snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           final user = snapshot.data;
           if (user == null) {

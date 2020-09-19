@@ -10,7 +10,7 @@ class SignInBloc {
   final AuthInterface auth;
   final ValueNotifier<bool> isLoading;
 
-  Future<User> _authenticate(Future<User> Function() authMethod) async {
+  Future<AppUser> _authenticate(Future<AppUser> Function() authMethod) async {
     try {
       isLoading.value = true;
       return await authMethod();
@@ -20,10 +20,10 @@ class SignInBloc {
     }
   }
 
-  Future<User> signinAnonymously() async => await _authenticate(
+  Future<AppUser> signinAnonymously() async => await _authenticate(
         auth.signInAnonymously,
       );
 
-  Future<User> signinWithGoogle() async =>
+  Future<AppUser> signinWithGoogle() async =>
       await _authenticate(auth.signInWithGoogle);
 }
